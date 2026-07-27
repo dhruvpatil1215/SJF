@@ -1,160 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SJF Scheduling Simulation</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        table, th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        #ganttChart {
-            margin-top: 20px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AllRound Playlist URL</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background: #0f172a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: white;
+      padding: 20px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 700px;
+      background: #1e293b;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0,0,0,.4);
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 28px;
+    }
+
+    .url-box {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    input {
+      flex: 1;
+      min-width: 250px;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #fff;
+      font-size: 15px;
+      outline: none;
+    }
+
+    button {
+      padding: 14px 25px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+      font-size: 15px;
+      transition: .3s;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .status {
+      margin-top: 15px;
+      color: #22c55e;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
 
-    <h1>Shortest Job First (SJF) Scheduling</h1>
-    <label for="numProcesses">Enter the number of processes:</label>
-    <input type="number" id="numProcesses" value="5" min="1" />
-    <button onclick="addProcessInputs()">Set Processes</button>
+<div class="card">
+    <h1>AllRound Playlist URL</h1>
 
-    <div id="processInputs"></div>
+    <div class="url-box">
+        <input
+            type="text"
+            id="playlistUrl"
+            value="https://techcoders.dhruvpatil681.workers.dev/AllRound"
+            readonly
+        >
+        <button onclick="copyURL()">Copy</button>
+    </div>
 
-    <button onclick="calculateSJF()">Calculate</button>
+    <div class="status" id="status"></div>
+</div>
 
-    <div id="result"></div>
-    <div id="ganttChart"></div>
+<script>
+function copyURL() {
+    const input = document.getElementById("playlistUrl");
 
-    <script>
-        function addProcessInputs() {
-            const numProcesses = document.getElementById('numProcesses').value;
-            const processInputs = document.getElementById('processInputs');
-            processInputs.innerHTML = '';
-            
-            for (let i = 0; i < numProcesses; i++) {
-                processInputs.innerHTML += `
-                    <h4>Process ${i + 1}</h4>
-                    <label>Burst Time:</label>
-                    <input type="number" id="burstTime${i}" required />
-                    <label>Arrival Time:</label>
-                    <input type="number" id="arrivalTime${i}" required />
-                    <br/><br/>
-                `;
-            }
-        }
-
-        function calculateSJF() {
-            const numProcesses = document.getElementById('numProcesses').value;
-            const processes = Array.from({length: numProcesses}, (_, i) => i + 1);
-            const bt = [];
-            const at = [];
-            const wt = [];
-            const tat = [];
-            let total_wt = 0;
-            let total_tat = 0;
-
-            for (let i = 0; i < numProcesses; i++) {
-                bt[i] = parseInt(document.getElementById(`burstTime${i}`).value);
-                at[i] = parseInt(document.getElementById(`arrivalTime${i}`).value);
-            }
-
-            let remaining_bt = [...bt];
-            let complete = 0;
-            let t = 0;
-            let gantt = [];
-
-            while (complete !== numProcesses) {
-                let min_idx = -1;
-                let min_bt = Number.MAX_VALUE;
-
-                for (let j = 0; j < numProcesses; j++) {
-                    if (at[j] <= t && remaining_bt[j] > 0 && remaining_bt[j] < min_bt) {
-                        min_bt = remaining_bt[j];
-                        min_idx = j;
-                    }
-                }
-
-                if (min_idx !== -1) {
-                    wt[min_idx] = t - at[min_idx];
-                    tat[min_idx] = wt[min_idx] + bt[min_idx];
-                    gantt.push(processes[min_idx]);
-                    total_wt += wt[min_idx];
-                    total_tat += tat[min_idx];
-                    t += bt[min_idx];
-                    remaining_bt[min_idx] = 0;
-                    complete++;
-                } else {
-                    t++;
-                }
-            }
-
-            let avg_wt = total_wt / numProcesses;
-            let avg_tat = total_tat / numProcesses;
-
-            // Display results
-            let resultHTML = `
-                <h3>Results</h3>
-                <table>
-                    <tr>
-                        <th>Process</th>
-                        <th>Burst Time</th>
-                        <th>Arrival Time</th>
-                        <th>Waiting Time</th>
-                        <th>Turnaround Time</th>
-                    </tr>`;
-
-            for (let i = 0; i < numProcesses; i++) {
-                resultHTML += `
-                    <tr>
-                        <td>P${processes[i]}</td>
-                        <td>${bt[i]}</td>
-                        <td>${at[i]}</td>
-                        <td>${wt[i] || 0}</td>
-                        <td>${tat[i] || 0}</td>
-                    </tr>`;
-            }
-
-            resultHTML += `</table>
-                <p>Average Waiting Time = ${avg_wt.toFixed(2)} = (${total_wt}) / (${numProcesses})</p>
-                <p>Average Turnaround Time = ${avg_tat.toFixed(2)}</p>
-            `;
-
-            document.getElementById('result').innerHTML = resultHTML;
-
-            // Display Gantt Chart
-            let ganttHTML = "<h3>Gantt Chart:</h3><div id='gantt'></div>";
-            let ganttContainer = document.getElementById('ganttChart');
-            ganttContainer.innerHTML = ganttHTML;
-
-            let ganttDiv = document.getElementById('gantt');
-            gantt.forEach((process, index) => {
-                ganttDiv.innerHTML += `| P${process} `;
-            });
-            ganttDiv.innerHTML += '|';
-
-            let currentTime = 0;
-            ganttDiv.innerHTML += "<br/>" + currentTime;
-            gantt.forEach((process, index) => {
-                currentTime += bt[process - 1];
-                ganttDiv.innerHTML += ` ${currentTime} `;
-            });
-        }
-    </script>
+    navigator.clipboard.writeText(input.value).then(() => {
+        document.getElementById("status").textContent = "✅ URL Copied!";
+        setTimeout(() => {
+            document.getElementById("status").textContent = "";
+        }, 2000);
+    });
+}
+</script>
 
 </body>
 </html>
